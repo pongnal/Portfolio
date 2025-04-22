@@ -10,6 +10,7 @@ exports.AppModule = void 0;
 const common_1 = require("@nestjs/common");
 const mongoose_1 = require("@nestjs/mongoose");
 const config_1 = require("@nestjs/config");
+const auth_module_1 = require("./auth/auth.module");
 const user_module_1 = require("./user/user.module");
 let AppModule = class AppModule {
 };
@@ -22,6 +23,7 @@ exports.AppModule = AppModule = __decorate([
                 envFilePath: '.env',
             }),
             mongoose_1.MongooseModule.forRoot('mongodb://localhost:27017/portfolio'),
+            auth_module_1.AuthModule,
             user_module_1.UserModule,
         ],
     })

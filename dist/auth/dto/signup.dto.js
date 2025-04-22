@@ -15,16 +15,16 @@ class SignUpDto {
 }
 exports.SignUpDto = SignUpDto;
 __decorate([
-    (0, class_validator_1.IsEmail)(),
     (0, class_validator_1.IsNotEmpty)(),
+    (0, class_validator_1.IsEmail)({}, { message: 'Invalid email address' }),
     __metadata("design:type", String)
 ], SignUpDto.prototype, "userEmail", void 0);
 __decorate([
     (0, class_validator_1.IsString)(),
     (0, class_validator_1.IsNotEmpty)(),
-    (0, class_validator_1.MinLength)(8),
+    (0, class_validator_1.MinLength)(6),
     (0, class_validator_1.Matches)(/((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$/, {
-        message: 'Password must contain uppercase, lowercase, number/special character',
+        message: 'Password must contain at least 1 uppercase letter, 1 lowercase letter, and 1 number or special character',
     }),
     __metadata("design:type", String)
 ], SignUpDto.prototype, "password", void 0);

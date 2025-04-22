@@ -8,13 +8,14 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AuthModule = void 0;
 const common_1 = require("@nestjs/common");
+const auth_controller_1 = require("./auth.controller");
+const auth_service_1 = require("./auth.service");
+const user_schemas_1 = require("../user/schemas/user.schemas");
+const mongoose_1 = require("@nestjs/mongoose");
 const passport_1 = require("@nestjs/passport");
 const jwt_1 = require("@nestjs/jwt");
 const config_1 = require("@nestjs/config");
-const auth_controller_1 = require("./auth.controller");
-const auth_service_1 = require("./auth.service");
 const jwt_strategy_1 = require("./strategies/jwt.strategy");
-const user_module_1 = require("../user/user.module");
 const roles_guard_1 = require("./guards/roles.guard");
 let AuthModule = class AuthModule {
 };
@@ -22,22 +23,31 @@ exports.AuthModule = AuthModule;
 exports.AuthModule = AuthModule = __decorate([
     (0, common_1.Module)({
         imports: [
-            user_module_1.UserModule,
             passport_1.PassportModule.register({ defaultStrategy: 'jwt' }),
             jwt_1.JwtModule.registerAsync({
-                imports: [config_1.ConfigModule],
                 inject: [config_1.ConfigService],
-                useFactory: (config) => ({
-                    secret: config.get('JWT_SECRET'),
-                    signOptions: {
-                        expiresIn: config.get('JWT_EXPIRES', '24h'),
-                    },
-                }),
+                useFactory: (config) => {
+                    const jwtSecret = config.get('JWT_SECRET');
+                    const jwtExpires = config.get('JWT_EXPIRES');
+                    if (!jwtSecret) {
+                        throw new Error('JWT_SECRET is not defined');
+                    }
+                    if (!jwtExpires) {
+                        throw new Error('JWT_EXPIRES is not defined');
+                    }
+                    return {
+                        secret: jwtSecret,
+                        signOptions: {
+                            expiresIn: jwtExpires,
+                        },
+                    };
+                },
             }),
+            mongoose_1.MongooseModule.forFeature([{ name: user_schemas_1.User.name, schema: user_schemas_1.UserSchema }]),
         ],
         controllers: [auth_controller_1.AuthController],
         providers: [auth_service_1.AuthService, jwt_strategy_1.JwtStrategy, roles_guard_1.RolesGuard],
-        exports: [jwt_strategy_1.JwtStrategy, passport_1.PassportModule, roles_guard_1.RolesGuard],
+        exports: [jwt_strategy_1.JwtStrategy, passport_1.PassportModule, auth_service_1.AuthService],
     })
 ], AuthModule);
 //# sourceMappingURL=auth.module.js.map

@@ -1,33 +1,38 @@
-import { Response } from 'express';
 import { AuthService } from './auth.service';
 import { SignUpDto } from './dto/signup.dto';
 import { LoginDto } from './dto/login.dto';
-import { UserService } from '../user/user.service';
+import { Response } from 'express';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
 export declare class AuthController {
-    private readonly authService;
-    private readonly userService;
-    constructor(authService: AuthService, userService: UserService);
+    private authService;
+    constructor(authService: AuthService);
     signUp(signUpDto: SignUpDto): Promise<{
         message: string;
     }>;
-    login(loginDto: LoginDto, response: Response): Promise<{
+    login(response: Response, loginDto: LoginDto): Promise<{
         user: any;
-        tokens: {
-            accessToken: string;
-            refreshToken: string;
-        };
     }>;
-    refreshTokens(req: any, response: Response): Promise<{
-        tokens: {
-            accessToken: string;
-            refreshToken: string;
-        };
-    }>;
-    logout(req: any, response: Response): Promise<{
+    refreshTokens(refreshToken: string, req: any, response: Response): Promise<{
         message: string;
     }>;
-    getProfile(req: any): {
+    logout(req: any, refreshToken: string, response: Response): Promise<{
+        message: string;
+    }>;
+    getCurrentUser(req: any): Promise<{
         user: any;
-    };
-    getAllUsers(): Promise<import("../user/schemas/user.schemas").User[]>;
+    }>;
+    getAllUsers(): Promise<(import("mongoose").Document<unknown, {}, import("../user/schemas/user.schemas").User> & import("../user/schemas/user.schemas").User & {
+        _id: import("mongoose").Types.ObjectId;
+    } & {
+        __v: number;
+    })[]>;
+    forgotPassword(forgotPasswordDto: ForgotPasswordDto): Promise<{
+        success: boolean;
+        message: string;
+        temporaryPassword?: undefined;
+    } | {
+        success: boolean;
+        message: string;
+        temporaryPassword: string;
+    }>;
 }

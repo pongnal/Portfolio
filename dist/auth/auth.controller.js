@@ -15,24 +15,23 @@ var _a, _b, _c;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AuthController = void 0;
 const common_1 = require("@nestjs/common");
-const express_1 = require("express");
 const auth_service_1 = require("./auth.service");
 const signup_dto_1 = require("./dto/signup.dto");
 const login_dto_1 = require("./dto/login.dto");
-const jwt_auth_guard_1 = require("./guards/jwt-auth.guard");
-const roles_guard_1 = require("./guards/roles.guard");
+const passport_1 = require("@nestjs/passport");
 const roles_decorator_1 = require("./decorators/roles.decorator");
+const roles_guard_1 = require("./guards/roles.guard");
 const user_schemas_1 = require("../user/schemas/user.schemas");
-const user_service_1 = require("../user/user.service");
+const express_1 = require("express");
+const forgot_password_dto_1 = require("./dto/forgot-password.dto");
 let AuthController = class AuthController {
-    constructor(authService, userService) {
+    constructor(authService) {
         this.authService = authService;
-        this.userService = userService;
     }
-    async signUp(signUpDto) {
+    signUp(signUpDto) {
         return this.authService.signUp(signUpDto);
     }
-    async login(loginDto, response) {
+    async login(response, loginDto) {
         const result = await this.authService.login(loginDto);
         response.cookie('access_token', result.tokens.accessToken, {
             httpOnly: true,
@@ -46,13 +45,11 @@ let AuthController = class AuthController {
             sameSite: 'lax',
             expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
         });
-        return result;
+        return {
+            user: result.user
+        };
     }
-    async refreshTokens(req, response) {
-        const refreshToken = req.cookies.refresh_token;
-        if (!refreshToken) {
-            throw new common_1.UnauthorizedException('Refresh token not found');
-        }
+    async refreshTokens(refreshToken, req, response) {
         const tokens = await this.authService.refreshTokens(req.user._id, refreshToken);
         response.cookie('access_token', tokens.accessToken, {
             httpOnly: true,
@@ -66,74 +63,85 @@ let AuthController = class AuthController {
             sameSite: 'lax',
             expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
         });
-        return { tokens };
+        return { message: 'Tokens refreshed successfully' };
     }
-    async logout(req, response) {
-        await this.authService.logout(req.user._id);
+    async logout(req, refreshToken, response) {
+        await this.authService.logout(req.user._id, refreshToken);
         response.clearCookie('access_token');
         response.clearCookie('refresh_token');
         return { message: 'Logged out successfully' };
     }
-    getProfile(req) {
+    async getCurrentUser(req) {
         return { user: req.user };
     }
-    async getAllUsers() {
-        return this.userService.findAll();
+    getAllUsers() {
+        return this.authService.getAllUsers();
+    }
+    async forgotPassword(forgotPasswordDto) {
+        return this.authService.forgotPassword(forgotPasswordDto.userEmail);
     }
 };
 exports.AuthController = AuthController;
 __decorate([
-    (0, common_1.Post)('signup'),
+    (0, common_1.Post)('/signup'),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [signup_dto_1.SignUpDto]),
     __metadata("design:returntype", Promise)
 ], AuthController.prototype, "signUp", null);
 __decorate([
-    (0, common_1.Post)('login'),
-    __param(0, (0, common_1.Body)()),
-    __param(1, (0, common_1.Res)({ passthrough: true })),
+    (0, common_1.Post)('/login'),
+    __param(0, (0, common_1.Res)({ passthrough: true })),
+    __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [login_dto_1.LoginDto, typeof (_a = typeof express_1.Response !== "undefined" && express_1.Response) === "function" ? _a : Object]),
+    __metadata("design:paramtypes", [typeof (_a = typeof express_1.Response !== "undefined" && express_1.Response) === "function" ? _a : Object, login_dto_1.LoginDto]),
     __metadata("design:returntype", Promise)
 ], AuthController.prototype, "login", null);
 __decorate([
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
-    (0, common_1.Post)('refresh'),
-    __param(0, (0, common_1.Req)()),
-    __param(1, (0, common_1.Res)({ passthrough: true })),
+    (0, common_1.UseGuards)((0, passport_1.AuthGuard)('jwt')),
+    (0, common_1.Post)('/refresh'),
+    __param(0, (0, common_1.Body)('refreshToken')),
+    __param(1, (0, common_1.Request)()),
+    __param(2, (0, common_1.Res)({ passthrough: true })),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, typeof (_b = typeof express_1.Response !== "undefined" && express_1.Response) === "function" ? _b : Object]),
+    __metadata("design:paramtypes", [String, Object, typeof (_b = typeof express_1.Response !== "undefined" && express_1.Response) === "function" ? _b : Object]),
     __metadata("design:returntype", Promise)
 ], AuthController.prototype, "refreshTokens", null);
 __decorate([
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
-    (0, common_1.Post)('logout'),
-    __param(0, (0, common_1.Req)()),
-    __param(1, (0, common_1.Res)({ passthrough: true })),
+    (0, common_1.UseGuards)((0, passport_1.AuthGuard)('jwt')),
+    (0, common_1.Post)('/logout'),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Body)('refreshToken')),
+    __param(2, (0, common_1.Res)({ passthrough: true })),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, typeof (_c = typeof express_1.Response !== "undefined" && express_1.Response) === "function" ? _c : Object]),
+    __metadata("design:paramtypes", [Object, String, typeof (_c = typeof express_1.Response !== "undefined" && express_1.Response) === "function" ? _c : Object]),
     __metadata("design:returntype", Promise)
 ], AuthController.prototype, "logout", null);
 __decorate([
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
-    (0, common_1.Get)('me'),
-    __param(0, (0, common_1.Req)()),
+    (0, common_1.UseGuards)((0, passport_1.AuthGuard)('jwt')),
+    (0, common_1.Get)('/me'),
+    __param(0, (0, common_1.Request)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", void 0)
-], AuthController.prototype, "getProfile", null);
+    __metadata("design:returntype", Promise)
+], AuthController.prototype, "getCurrentUser", null);
 __decorate([
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
+    (0, common_1.UseGuards)((0, passport_1.AuthGuard)('jwt'), roles_guard_1.RolesGuard),
     (0, roles_decorator_1.Roles)(user_schemas_1.UserRole.ADMIN),
-    (0, common_1.Get)('users'),
+    (0, common_1.Get)('/users'),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
-    __metadata("design:returntype", Promise)
+    __metadata("design:returntype", void 0)
 ], AuthController.prototype, "getAllUsers", null);
+__decorate([
+    (0, common_1.Post)('/forgot-password'),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [forgot_password_dto_1.ForgotPasswordDto]),
+    __metadata("design:returntype", Promise)
+], AuthController.prototype, "forgotPassword", null);
 exports.AuthController = AuthController = __decorate([
     (0, common_1.Controller)('auth'),
-    __metadata("design:paramtypes", [auth_service_1.AuthService,
-        user_service_1.UserService])
+    __metadata("design:paramtypes", [auth_service_1.AuthService])
 ], AuthController);
 //# sourceMappingURL=auth.controller.js.map
