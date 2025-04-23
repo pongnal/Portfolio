@@ -3,6 +3,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
+import { BlogModule } from './blog/blog.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { UserModule } from './user/user.module';
     MongooseModule.forRoot('mongodb://localhost:27017/portfolio'),
     AuthModule,
     UserModule,
+    BlogModule,
   ],
 })
 export class AppModule {} 

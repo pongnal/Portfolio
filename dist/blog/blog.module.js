@@ -6,28 +6,22 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.AppModule = void 0;
+exports.BlogModule = void 0;
 const common_1 = require("@nestjs/common");
 const mongoose_1 = require("@nestjs/mongoose");
-const config_1 = require("@nestjs/config");
-const auth_module_1 = require("./auth/auth.module");
-const user_module_1 = require("./user/user.module");
-const blog_module_1 = require("./blog/blog.module");
-let AppModule = class AppModule {
+const blog_controller_1 = require("./blog.controller");
+const blog_service_1 = require("./blog.service");
+const blog_schema_1 = require("./schemas/blog.schema");
+let BlogModule = class BlogModule {
 };
-exports.AppModule = AppModule;
-exports.AppModule = AppModule = __decorate([
+exports.BlogModule = BlogModule;
+exports.BlogModule = BlogModule = __decorate([
     (0, common_1.Module)({
         imports: [
-            config_1.ConfigModule.forRoot({
-                isGlobal: true,
-                envFilePath: '.env',
-            }),
-            mongoose_1.MongooseModule.forRoot('mongodb://localhost:27017/portfolio'),
-            auth_module_1.AuthModule,
-            user_module_1.UserModule,
-            blog_module_1.BlogModule,
+            mongoose_1.MongooseModule.forFeature([{ name: blog_schema_1.Blog.name, schema: blog_schema_1.BlogSchema }]),
         ],
+        controllers: [blog_controller_1.BlogController],
+        providers: [blog_service_1.BlogService],
     })
-], AppModule);
-//# sourceMappingURL=app.module.js.map
+], BlogModule);
+//# sourceMappingURL=blog.module.js.map
