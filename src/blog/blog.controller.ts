@@ -4,10 +4,10 @@ import { CreatePostDto } from './dto/create-post.dto';
 import { AuthGuard } from '@nestjs/passport';
 
 @Controller('blog')
+@UseGuards(AuthGuard('jwt'))
 export class BlogController {
   constructor(private blogService: BlogService) {}
 
-  @UseGuards(AuthGuard('jwt'))
   @Post('post')
   async createPost(
     @Request() req,
@@ -20,7 +20,6 @@ export class BlogController {
     );
   }
 
-  @UseGuards(AuthGuard('jwt'))
   @Get('my-posts')
   async getMyPosts(@Request() req) {
     return await this.blogService.getUserPosts(req.user._id);

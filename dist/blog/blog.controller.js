@@ -33,7 +33,6 @@ let BlogController = class BlogController {
 };
 exports.BlogController = BlogController;
 __decorate([
-    (0, common_1.UseGuards)((0, passport_1.AuthGuard)('jwt')),
     (0, common_1.Post)('post'),
     __param(0, (0, common_1.Request)()),
     __param(1, (0, common_1.Body)()),
@@ -42,7 +41,6 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], BlogController.prototype, "createPost", null);
 __decorate([
-    (0, common_1.UseGuards)((0, passport_1.AuthGuard)('jwt')),
     (0, common_1.Get)('my-posts'),
     __param(0, (0, common_1.Request)()),
     __metadata("design:type", Function),
@@ -57,6 +55,7 @@ __decorate([
 ], BlogController.prototype, "getAllPosts", null);
 exports.BlogController = BlogController = __decorate([
     (0, common_1.Controller)('blog'),
+    (0, common_1.UseGuards)((0, passport_1.AuthGuard)('jwt')),
     __metadata("design:paramtypes", [blog_service_1.BlogService])
 ], BlogController);
 //# sourceMappingURL=blog.controller.js.map
