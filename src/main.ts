@@ -11,6 +11,7 @@ async function bootstrap() {
     origin: 'http://localhost:3000', // Your frontend URL
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     credentials: true,
+    allowedHeaders: ['Content-Type', 'Accept', 'Authorization'],
   });
 
   await app.listen(3007);
